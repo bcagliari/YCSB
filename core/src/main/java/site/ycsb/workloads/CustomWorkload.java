@@ -56,17 +56,13 @@ public class CustomWorkload extends Workload {
   @Override
   public boolean doTransaction(DB db, Object threadState) {
     // Generate a random operation (read or insert)
-    int operationSelector = (int) (Math.random() * 2);
+    String key = keyGenerator.nextValue().toString();
 
-    if (operationSelector == 0) {
-    // Perform a read operation
-      this.doTransactionRead(db);
-    } else {
-      // Perform an insert operation
-      return this.doInsert(db, threadState);
-    }
+    Set<String> fields = null;
+    Map<String, ByteIterator> result = new HashMap<>();
+    Status status = db.read(TABLE_NAME, key, fields, result);
 
-    return true;
+    return status == Status.OK;
   }
 
   /**
@@ -76,18 +72,5 @@ public class CustomWorkload extends Workload {
   @Override
   public void cleanup() throws WorkloadException {
     // Cleanup logic here
-  }
-
-  /**
-  * Initialize the scenario.
-  * Called once, in the main client thread, before any operations are started.
-  */
-  public void doTransactionRead(DB db) {
-    // Generate a random user ID for read operation
-    int userId = (int) (Math.random() * Integer.parseInt("1000"));
-
-    // Read the record from the database
-    HashMap<String, ByteIterator> result = new HashMap<String, ByteIterator>();
-    db.read(TABLE_NAME, Integer.toString(userId), null, result);
   }
 }
